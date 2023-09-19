@@ -2,11 +2,13 @@ import re
 import os
 import time
 import sys
+import openai
 import threading 
 import requests
 import keyboard
 
-selected_lang = "EN"
+input_lang = "EN"
+output_lang = "HU"
 
 deepl_api_key = ''
 script_dir = os.path.dirname(os.path.realpath(__file__))
@@ -41,6 +43,21 @@ def preprocess_subtitle(input_subtitle_file, output_text_file, max_chars=None):
     except Exception as e:
         print(f"Hiba az előfeldolgozás közben: {str(e)}")
 
+def translate_with_chatgpt(input_text, language=output_lang):
+    conversation = [
+        {"role": "system", "content": f"Translate the following English text to {language}:"},
+        {"role": "user", "content": input_text},
+    ]
+
+    response = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",
+        messages=conversation,
+        timeout=60
+    )
+
+    return response.choices[0].message["content"]
+
+
 def seconds_to_minutes(seconds):
     minutes = seconds // 60
     seconds %= 60
@@ -59,9 +76,6 @@ def progress_monitor():
                     return
                 time.sleep(10)  
 
-
-
-# tramslate it wit deepl (beter xDDDDDDD) xD
 def translate_with_deepl(text, source_lang, target_lang):
     url = 'https://api-free.deepl.com/v2/translate'
     params = {
@@ -77,23 +91,6 @@ def translate_with_deepl(text, source_lang, target_lang):
     translated_text = translation['translations'][0]['text']
 
     return translated_text
-
-
-# tramslate it wit openai xD
-def translate_with_chatgpt(input_text, language="hu"):
-    conversation = [
-        {"role": "system", "content": f"Translate the following English text to {language}:"},
-        {"role": "user", "content": input_text},
-    ]
-
-    response = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo",
-        messages=conversation,
-        timeout=60
-    )
-
-    return response.choices[0].message["content"]
-
 
 def translate_to_hungarian_with_deepl(input_text_file, output_hungarian_file):
     print("Fordítás magyarra...")
@@ -118,7 +115,7 @@ def translate_to_hungarian_with_deepl(input_text_file, output_hungarian_file):
 
                 while retries < max_retries:
                     try:
-                        translated_line = translate_with_deepl(line, selected_lang, "HU")
+                        translated_line = translate_with_deepl(line, input_lang, output_lang)
                         translated_content.append(translated_line)
                         current_chunk += 1
                         progress = current_chunk / total_chunks
