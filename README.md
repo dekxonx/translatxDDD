@@ -1,2 +1,2 @@
 # translatxDDD
-xd ballin asf
+tramslate subtitl file from outputu language to input langauge
