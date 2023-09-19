@@ -11,6 +11,8 @@ input_lang = "EN"
 output_lang = "HU"
 
 deepl_api_key = ''
+openai.api_key = ''
+
 script_dir = os.path.dirname(os.path.realpath(__file__))
 last_progress_update_time = time.time()
 
